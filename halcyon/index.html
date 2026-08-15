@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Halcyon Pain Free — Meta Ads Report</title>
+<style>
+:root[data-theme="dark"]{color-scheme:dark;
+  --canvas:#0B0B0E;--card:#141418;--card-2:#1B1B21;--raise:#22222A;
+  --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.14);
+  --ink:#F6F6F8;--ink-2:#A6A6B2;--ink-3:#71717F;--grid:#26262E;--axis:#33333D;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--good:#0ca30c;--warn:#fab219;--crit:#d03b3b;
+  --good-ink:#3ad13a;--warn-ink:#fab219;--crit-ink:#ff6b6b;
+  --glow:0 0 0 1px rgba(255,255,255,.05),0 1px 2px rgba(0,0,0,.5),0 12px 32px -12px rgba(0,0,0,.7);}
+:root[data-theme="light"]{color-scheme:light;
+  --canvas:#F6F6F4;--card:#FFFFFF;--card-2:#FAFAF8;--raise:#F0F0EC;
+  --line:rgba(11,11,11,.10);--line-2:rgba(11,11,11,.16);
+  --ink:#0B0B0E;--ink-2:#55555F;--ink-3:#8A8A94;--grid:#E7E7E1;--axis:#C9C9C1;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--good:#0ca30c;--warn:#fab219;--crit:#d03b3b;
+  --good-ink:#006300;--warn-ink:#8a5c00;--crit-ink:#c0392b;
+  --glow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -14px rgba(0,0,0,.28);}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);font-size:15px;line-height:1.5;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.shell{max-width:1080px;margin:0 auto;padding:0 20px 80px}
+.topbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--canvas) 88%,transparent);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topin{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+.topin h1{font-size:16px;font-weight:650;margin:0;letter-spacing:-.01em}
+.topin small{display:block;font-size:12px;color:var(--ink-3)}
+.ghost{border:1px solid var(--line);background:var(--card-2);color:var(--ink-2);border-radius:999px;
+  width:38px;height:34px;font-size:15px;cursor:pointer;display:grid;place-items:center}
+.ghost:hover{color:var(--ink)}
+nav.rt{display:flex;gap:6px;margin:22px 0 0;flex-wrap:wrap}
+nav.rt button{display:flex;align-items:center;gap:8px;border:1px solid transparent;background:transparent;
+  color:var(--ink-2);font:inherit;font-size:14px;font-weight:550;padding:9px 16px;border-radius:999px;
+  cursor:pointer;transition:.15s;white-space:nowrap}
+nav.rt button:hover{color:var(--ink);background:var(--card-2)}
+nav.rt button[aria-selected="true"]{background:var(--card);border-color:var(--line-2);color:var(--ink);
+  font-weight:650;box-shadow:var(--glow)}
+nav.rt .cnt{font-size:11.5px;color:var(--ink-3);font-weight:600}
+nav.rt button[aria-selected="true"] .cnt{color:var(--ink-2)}
+.rpanel{display:none}.rpanel.on{display:block;animation:fd .22s ease}
+@keyframes fd{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.fchip{border:1px solid var(--line);background:var(--card-2);color:var(--ink-2);font:inherit;font-size:12.5px;
+  font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+.fchip:hover{color:var(--ink);border-color:var(--line-2)}
+.fchip[aria-pressed="true"]{background:var(--raise);color:var(--ink);border-color:var(--line-2)}
+.fchip .n{color:var(--ink-3);font-weight:500;margin-left:5px}
+.srch{flex:1;min-width:180px;background:var(--card-2);border:1px solid var(--line);border-radius:999px;
+  padding:8px 15px;color:var(--ink);font:inherit;font-size:13.5px}
+.srch:focus{outline:2px solid var(--s1);outline-offset:1px}
+.sep{width:1px;height:22px;background:var(--line-2);margin:0 3px}
+.stg{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;padding:3px 10px;
+  border-radius:999px;border:1px solid var(--line-2);background:var(--card-2);white-space:nowrap}
+.stg i{width:6px;height:6px;border-radius:50%}
+.stg.New{color:var(--warn-ink)} .stg.New i{background:var(--warn)}
+.stg.Contacted{color:var(--s1)} .stg.Contacted i{background:var(--s1)}
+.stg.Qualified{color:var(--good-ink)} .stg.Qualified i{background:var(--good)}
+.stg.Junk{color:var(--ink-3)} .stg.Junk i{background:var(--ink-3)}
+.ph{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.sortable{cursor:pointer;user-select:none}
+.sortable:hover{color:var(--ink)}
+th[data-dir]::after{content:'↓';margin-left:5px;color:var(--s1)}
+th[data-dir="asc"]::after{content:'↑'}
+.empty{padding:34px;text-align:center;color:var(--ink-3);font-size:13.5px}
+h2.sec{font-size:22px;font-weight:700;letter-spacing:-.025em;margin:38px 0 4px}
+p.secsub{margin:0 0 14px;color:var(--ink-3);font-size:13.5px}
+.livebar{background:linear-gradient(135deg,color-mix(in srgb,var(--s1) 14%,var(--card)),var(--card));
+  border:1px solid var(--line-2);border-radius:20px;padding:22px;margin-top:26px;box-shadow:var(--glow)}
+.livehd{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.livehd h2{margin:0;font-size:24px;font-weight:700;letter-spacing:-.028em}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--good);flex:0 0 9px;
+  box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 60%,transparent);animation:pl 2.6s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 55%,transparent)}
+  70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.livesub{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+.livegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.lv{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px}
+.lv .l{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:7px}
+.lv .v{font-size:32px;font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums}
+.lv .v.sm{font-size:24px}
+.lv .s{font-size:12px;color:var(--ink-2);margin-top:6px}
+.lv.hi{border-color:color-mix(in srgb,var(--s2) 45%,var(--line))}
+.lv.hi .v{color:var(--s2)}
+.lv.hi2{border-color:color-mix(in srgb,var(--s3) 45%,var(--line))}
+.lv.hi2 .v{color:var(--s3)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 17px;box-shadow:var(--glow)}
+.stat .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);margin-bottom:8px}
+.stat .v{font-size:29px;font-weight:700;letter-spacing:-.032em;line-height:1;font-variant-numeric:tabular-nums}
+.stat .v.sm{font-size:23px}
+.stat .s{font-size:12.5px;color:var(--ink-2);margin-top:7px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--glow)}
+.card h4{margin:0 0 3px;font-size:14.5px;font-weight:650}
+.card .sub{margin:0 0 14px;font-size:12.5px;color:var(--ink-3)}
+.strip{height:4px;border-radius:99px;margin-bottom:16px}
+svg.chart{display:block;width:100%;overflow:visible}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--line);margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{color:var(--ink-3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.045em;background:var(--card-2)}
+th.l,td.l{text-align:left} td.l{max-width:340px;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:normal}
+td .nm{font-weight:550}
+tbody tr:hover{background:var(--card-2)} tbody tr:last-child td{border-bottom:0}
+tfoot td{font-weight:650;background:var(--card-2);border-top:1px solid var(--line-2);border-bottom:0}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px}
+.mcell{background:var(--card);padding:13px 14px}
+.mcell .ml{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:6px}
+.mcell .mv{font-size:19px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mcell .ms{font-size:11.5px;color:var(--ink-2);margin-top:4px}
+.note{font-size:12.5px;color:var(--ink-3);margin-top:12px;line-height:1.6}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 10px;
+  border-radius:999px;border:1px solid var(--line-2);color:var(--ink-2);background:var(--card-2)}
+.chip.w{color:var(--warn-ink)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12.5px;line-height:1.75}
+.foot b{color:var(--ink-2)}
+.loadmsg{padding:80px 20px;text-align:center;color:var(--ink-2)}
+.loadmsg h2{font-size:20px;color:var(--ink);margin:0 0 10px;letter-spacing:-.02em}
+.loadmsg p{margin:0 auto 10px;max-width:58ch;font-size:14.5px;line-height:1.65}
+.loadmsg .hint{font-size:13px;color:var(--ink-3)}
+.loadmsg code{background:var(--card-2);padding:1px 5px;border-radius:4px;font-size:12.5px}
+.spin{width:26px;height:26px;margin:0 auto 16px;border-radius:50%;
+  border:2.5px solid var(--line-2);border-top-color:var(--s1);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+nav.rt.hide{display:none}
+@media (max-width:640px){.shell{padding:0 13px 56px}.topin{padding:12px 13px}
+  .livehd h2{font-size:20px}.lv .v{font-size:26px}.stat .v{font-size:24px}h2.sec{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topin">
+  <div><h1>Halcyon Pain Free</h1><small id="hsub"></small></div>
+  <button class="ghost" id="theme" title="Switch theme">&#9728;</button>
+</div></div>
+<div class="shell">
+  <nav class="rt hide" id="rtabs">
+    <button data-p="overview" aria-selected="true">Report</button>
+    <button data-p="leads" aria-selected="false">All leads <span class="cnt" id="leadcnt"></span></button>
+  </nav>
+  <div class="rpanel on" id="p-overview"><div id="app"></div></div>
+  <div class="rpanel" id="p-leads"><div id="leadapp"></div></div>
+  <div class="foot" id="foot"></div>
+</div>
+<script>let R = null;</script>
+<script>
+const nf=new Intl.NumberFormat('en-IN');
+const money=v=>'₹'+nf.format(Math.round(v));
+const money2=v=>'₹'+Number(v).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=v=>nf.format(Math.round(v));
+const pct=v=>Number(v).toFixed(2)+'%';
+const dec=(v,n=2)=>Number(v).toFixed(n);
+const compact=v=>v>=1e7?(v/1e7).toFixed(2)+' Cr':v>=1e5?(v/1e5).toFixed(2)+' L'
+  :v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':nf.format(Math.round(v));
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dL=s=>{const p=s.split('-');return (+p[2])+' '+MON[+p[1]-1];};
+const dLY=s=>dL(s)+' '+s.slice(0,4);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hm=m=>{const h=Math.floor(m/60),mm=Math.round(m%60);
+  return h?`${h}h ${mm}m`:`${mm} min`;};
+const mid=(s,n=44)=>s.length<=n?s:s.slice(0,Math.ceil(n/2)-1)+'…'+s.slice(-Math.floor(n/2)+2);
+
+function smooth(p){if(p.length<3)return 'M'+p.map(x=>x.join(',')).join(' L');
+  let d='M'+p[0][0]+','+p[0][1];
+  for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;
+    d+=` C${(b[0]+(c[0]-a[0])/6).toFixed(1)},${(b[1]+(c[1]-a[1])/6).toFixed(1)} `
+      +`${(c[0]-(e[0]-b[0])/6).toFixed(1)},${(c[1]-(e[1]-b[1])/6).toFixed(1)} `
+      +`${c[0].toFixed(1)},${c[1].toFixed(1)}`;} return d;}
+let GID=0;
+function barsCol(rows,key,color,fmt,label){
+  const W=860,H=210,ml=54,mr=14,mt=16,mb=40,n=rows.length;
+  const mx=(Math.max(...rows.map(r=>r[key]||0),0)||1)*1.18;
+  const bw=(W-ml-mr)/n*0.56, step=(W-ml-mr)/n;
+  const Y=v=>mt+(H-mt-mb)*(1-v/mx);
+  let g='';[0,.5,1].forEach(t=>{const v=mx*t;
+    g+=`<line x1="${ml}" x2="${W-mr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--grid)"/>`
+     +`<text x="${ml-10}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--ink-3)">${fmt(v)}</text>`;});
+  let b='';
+  rows.forEach((r,i)=>{const x=ml+i*step+(step-bw)/2, v=r[key]||0, h=Math.max(2,Y(0)-Y(v));
+    b+=`<g><rect x="${x.toFixed(1)}" y="${Y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}"
+        rx="5" fill="${color}" opacity="${r.partial?0.55:1}"/>
+      <text x="${(x+bw/2).toFixed(1)}" y="${(Y(v)-7).toFixed(1)}" text-anchor="middle" font-size="11.5"
+        font-weight="650" fill="var(--ink)">${fmt(v)}</text>
+      <text x="${(x+bw/2).toFixed(1)}" y="${H-22}" text-anchor="middle" font-size="11" fill="var(--ink-3)">${dL(r.d)}</text>
+      ${r.partial?`<text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--warn-ink)">so far</text>`:''}</g>`;});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" style="aspect-ratio:${W}/${H}">${g}${b}
+    <line x1="${ml}" x2="${W-mr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="var(--axis)"/></svg>`;
+}
+const lv=(l,v,s,cls)=>`<div class="lv ${cls||''}"><div class="l">${esc(l)}</div><div class="v">${v}</div>
+  ${s?`<div class="s">${s}</div>`:''}</div>`;
+const stat=(l,v,s,sm)=>`<div class="stat"><div class="l">${esc(l)}</div>
+  <div class="v${sm?' sm':''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
+const mcell=(l,v,s)=>`<div class="mcell"><div class="ml">${esc(l)}</div><div class="mv">${v}</div>
+  ${s?`<div class="ms">${s}</div>`:''}</div>`;
+
+function table(cols,rows,tot){
+  let h='<div class="tw"><table><thead><tr>';
+  cols.forEach(c=>h+=`<th class="${c.l?'l':''}">${esc(c.h)}</th>`); h+='</tr></thead><tbody>';
+  rows.forEach(r=>{h+='<tr>';cols.forEach(c=>h+=`<td class="${c.l?'l':''}">${c.f(r)}</td>`);h+='</tr>';});
+  h+='</tbody>';
+  if(tot){h+='<tfoot><tr>';cols.forEach(c=>h+=`<td class="${c.l?'l':''}">${c.t?c.t(tot):''}</td>`);h+='</tr></tfoot>';}
+  return h+'</table></div>';
+}
+
+function render(){
+  const T=R.todayCalls, W=R.todayWeb, wc=R.weekCalls, ww=R.weekWeb, tt=R.weekTotal, sh=R.sheet;
+  let h='';
+
+  /* ---------- TODAY ---------- */
+  h+=`<div class="livebar">
+    <div class="livehd"><span class="dot"></span><h2>Today &middot; ${dLY(R.today)}</h2>
+      <span class="chip w">still updating</span></div>
+    <p class="livesub">Everything your ads have produced so far today. Meta keeps counting until midnight,
+      so these numbers will still rise.</p>
+    <div class="livegrid">
+      ${lv('Phone calls',num(T.res),money2(T.cpr)+' per call','hi')}
+      ${lv('Website leads',num(W.leads),`${num(sh.today8585)} on 8585 · ${num(sh.today7788)} on 7788`,'hi2')}
+      ${lv('Spent today',money(T.spend+W.spend),money(T.spend)+' calls · '+money(W.spend)+' website')}
+      ${lv('Cost per lead',money2(R.cpl.today),'Website spend ÷ leads today','hi2')}
+      ${lv('Landing page views',num(W.lpv),'People who opened the page')}
+      ${lv('Times shown',compact(T.imp+W.imp),num(T.clicks+W.clicks)+' clicks')}
+    </div></div>`;
+
+  /* ---------- 7 DAYS ---------- */
+  h+=`<h2 class="sec">Last 7 days</h2>
+    <p class="secsub">${dL(R.weekFrom)} – ${dLY(R.weekTo)} · today included and still counting</p>
+    <div class="stats">
+      ${stat('Phone calls',num(wc.res),money2(wc.cpr)+' per call')}
+      ${stat('Amount spent',money(tt.spend),money(tt.spend/7)+' a day')}
+      ${stat('Click-through rate',pct(tt.ctr),num(tt.clicks)+' clicks from '+compact(tt.imp)+' views')}
+      ${stat('Landing page views',num(ww.lpv),money2(ww.cplpv)+' each')}
+    </div>
+    <div class="card" style="margin-top:12px"><h4>Phone calls per day</h4>
+      <p class="sub">${dL(R.weekFrom)} – ${dLY(R.weekTo)}</p>
+      ${barsCol(R.daily,'calls','var(--s2)',v=>num(v))}</div>
+    <div class="card" style="margin-top:12px"><h4>Amount spent per day</h4>
+      <p class="sub">${dL(R.weekFrom)} – ${dLY(R.weekTo)}</p>
+      ${barsCol(R.daily,'spend','var(--s1)',v=>'₹'+compact(v))}</div>`;
+
+  /* ---------- CALL ADS ---------- */
+  h+=`<h2 class="sec">Call ads</h2>
+    <p class="secsub">Campaigns where the ad dials your number directly. The result is a phone call placed.</p>
+    <div class="card"><div class="strip" style="background:var(--s2)"></div>
+      <div class="mgrid">
+        ${mcell('Phone calls',num(wc.res),'In the last 7 days')}
+        ${mcell('Cost per call',money2(wc.cpr),'Lower is better')}
+        ${mcell('Spent',money(wc.spend),dec(wc.spend/tt.spend*100,0)+'% of total budget')}
+        ${mcell('Times shown',compact(wc.imp),'')}
+        ${mcell('Clicks',num(wc.clicks),'CTR '+pct(wc.ctr))}
+        ${mcell('Cost per 1,000 views',money2(wc.cpm),'')}
+      </div>
+      ${table([
+        {h:'Campaign',l:1,f:r=>`<div class="nm">${esc(mid(r.name))}</div>`,t:()=>`${R.callCamps.length} campaigns`},
+        {h:'Spent',f:r=>money2(r.spend),t:t=>money2(t.spend)},
+        {h:'Times shown',f:r=>num(r.imp),t:t=>num(t.imp)},
+        {h:'Clicks',f:r=>num(r.clicks),t:t=>num(t.clicks)},
+        {h:'CTR',f:r=>pct(r.ctr),t:t=>pct(t.ctr)},
+        {h:'Cost / 1,000 views',f:r=>money2(r.cpm),t:t=>money2(t.spend/t.imp*1000)},
+        {h:'Phone calls',f:r=>`<div class="nm">${num(r.res)}</div>`,t:t=>num(t.res)},
+        {h:'Cost / call',f:r=>money2(r.cpr),t:t=>money2(t.spend/t.res)},
+      ],R.callCamps,wc)}
+    </div>`;
+
+  /* ---------- WEBSITE ---------- */
+  const st=sh.status;
+  h+=`<h2 class="sec">Website leads</h2>
+    <p class="secsub">Campaigns that send people to your landing page, where they fill in the enquiry form.</p>
+    <div class="card"><div class="strip" style="background:var(--s3)"></div>
+      <div class="mgrid">
+        ${mcell('Cost per lead',money2(R.cpl.sheetCpl),`${dL(R.cpl.sheetFrom)}–${dL(R.cpl.sheetTo)} · ${num(R.cpl.sheetLeads)} leads`)}
+        ${mcell('Landing page views',num(ww.lpv),money2(ww.cplpv)+' each')}
+        ${mcell('Spent',money(ww.spend),dec(ww.spend/tt.spend*100,0)+'% of total budget')}
+        ${mcell('Click-through rate',pct(ww.ctr),num(ww.clicks)+' clicks')}
+        ${mcell('Cost per click',money2(ww.cpc),'')}
+        ${mcell('Cost per 1,000 views',money2(ww.cpm),'')}
+        ${mcell('Times shown',compact(ww.imp),'')}
+      </div>
+      ${table([
+        {h:'Campaign',l:1,f:r=>`<div class="nm">${esc(mid(r.name))}</div>`,t:()=>`${R.webCamps.length} campaigns`},
+        {h:'Spent',f:r=>money2(r.spend),t:t=>money2(t.spend)},
+        {h:'Times shown',f:r=>num(r.imp),t:t=>num(t.imp)},
+        {h:'Clicks',f:r=>num(r.clicks),t:t=>num(t.clicks)},
+        {h:'CTR',f:r=>pct(r.ctr),t:t=>pct(t.ctr)},
+        {h:'Landing page views',f:r=>num(r.lpv),t:t=>num(t.lpv)},
+        {h:'Cost / page view',f:r=>money2(r.cplpv),t:t=>money2(t.spend/t.lpv)},
+      ],R.webCamps,ww)}
+      <p class="note"><b>How cost per lead is worked out.</b> Your lead sheet logged ${num(R.cpl.sheetLeads)} leads
+      between ${dL(R.cpl.sheetFrom)} and ${dLY(R.cpl.sheetTo)}, against ${money2(R.cpl.sheetSpend)} of website ad spend
+      over the same two days — <b>${money2(R.cpl.sheetCpl)} per lead</b>. Meta's own figure for the full 7 days is
+      ${money2(R.cpl.metaWeek)}, but that only counts the ${num(R.cpl.metaLeads)} leads its pixel could tie back to an
+      ad; three of the four campaigns show zero leads there despite sending real traffic. Your sheet is the count to
+      trust, so that is the number shown above.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px"><h4>What happened to those leads</h4>
+      <p class="sub">From your lead sheet · ${dL(sh.minDate)} – ${dLY(sh.maxDate)} · ${num(sh.total)} leads logged</p>
+      <div class="mgrid">
+        ${mcell('Leads received',num(sh.total),'')}
+        ${mcell('Contacted',num(st.Contacted||0),'Reached and spoken to')}
+        ${mcell('Qualified',num(st.Qualified||0),'Real prospects')}
+        ${mcell('Not yet actioned',num(st.New||0),'Still sitting as new')}
+        ${mcell('Marked not genuine',num(st.Junk||0),'')}
+        ${mcell('Received today',num(sh.todayTotal),dLY(R.today))}
+      </div>
+      <div class="mgrid" style="margin-top:12px">
+        ${mcell('Average response time',hm(R.resp.meanMins),`Across ${num(R.resp.n)} leads with an individual timestamp`)}
+        ${mcell('Typical (middle) response',hm(R.resp.medianMins),'Half were faster than this')}
+        ${mcell('Fastest response',hm(R.resp.fastestMins),'Best of the period')}
+        ${mcell('Slowest response',hm(R.resp.slowestMins),'')}
+      </div>
+      <p class="note"><b>How response time is measured.</b> It is the gap between a lead arriving and your team first
+      marking it in the system. ${num(R.resp.n)} of the ${num(R.resp.total)} leads were marked one at a time, so those
+      are the ones timed here; the rest were updated together in batches, which would make the gap look longer than the
+      real time to pick up the phone. As your team marks each lead as they work it, this figure gets more accurate.</p>
+      ${table([
+        {h:'Enquiry number',l:1,f:r=>`<div class="nm">${esc(r.src)}</div>`},
+        {h:'Leads',f:r=>num(r.total)},
+        {h:'Actioned',f:r=>num(r.responded)},
+        {h:'Not yet actioned',f:r=>num(r.status.New||0)},
+        {h:'Contacted',f:r=>num(r.status.Contacted||0)},
+        {h:'Qualified',f:r=>num(r.status.Qualified||0)},
+      ],sh.bySource)}
+      <p class="note">Today alone brought <b>${num(sh.todayTotal)}</b> leads —
+        ${num(sh.today8585)} through 8585 and ${num(sh.today7788)} through 7788.</p>
+    </div>`;
+
+  document.getElementById('app').innerHTML=h;
+  document.getElementById('hsub').textContent=`Meta Ads report · ${dL(R.weekFrom)} – ${dLY(R.weekTo)}`;
+  document.getElementById('foot').innerHTML=
+   `<b>About these figures</b> — reported by Meta for your advertising account, in Indian Rupees.
+    Today's numbers (${dLY(R.today)}) are live and still rising; Meta finalises a day once it has ended.<br>
+    <b>Phone calls</b> counts taps on the call button in your ads that placed a call.
+    <b>Landing page views</b> counts people who clicked and waited for your page to open — always fewer than clicks.<br>
+    <b>Website leads</b> in the last section come from your own lead sheet, which is the authoritative record of
+    enquiries received. Cost per call divides only the spend of the call campaigns, never total account spend.`;
+}
+
+/* ---------- all leads tab ---------- */
+let LF={status:'all',src:'all',q:''}, LSORT={k:'created',dir:'desc'};
+const tOnly=s=>{const p=s.split(' ');return p[1]?p[1].slice(0,5):'';};
+function leadFiltered(){
+  const q=LF.q.trim().toLowerCase();
+  let rows=R.leadRows.filter(r=>
+    (LF.status==='all'||r.status===LF.status) &&
+    (LF.src==='all'||r.src===LF.src) &&
+    (!q || r.name.toLowerCase().includes(q) || r.phone.includes(q)));
+  const k=LSORT.k, dir=LSORT.dir==='asc'?1:-1;
+  rows=rows.slice().sort((a,b)=>{
+    let av=a[k], bv=b[k];
+    if(k==='mins'){av=av==null?-1:av; bv=bv==null?-1:bv;}
+    if(typeof av==='number'&&typeof bv==='number') return (av-bv)*dir;
+    return String(av).localeCompare(String(bv))*dir;});
+  return rows;
+}
+function renderLeads(){
+  const sh=R.sheet, all=R.leadRows;
+  const cnt=k=>all.filter(r=>r.status===k).length;
+  const rows=leadFiltered();
+  const th=(k,label,cls)=>`<th class="sortable ${cls||''}" data-k="${k}"
+    ${LSORT.k===k?`data-dir="${LSORT.dir}"`:''}>${esc(label)}</th>`;
+  let h=`<h2 class="sec" style="margin-top:26px">Every lead</h2>
+    <p class="secsub">From your lead sheet · ${dL(sh.minDate)} – ${dLY(sh.maxDate)} · ${num(all.length)} enquiries</p>
+    <div class="card">
+      <div class="filters">
+        <button class="fchip" data-f="status" data-v="all" aria-pressed="${LF.status==='all'}">All<span class="n">${all.length}</span></button>
+        ${['New','Contacted','Qualified','Junk'].map(k=>
+          `<button class="fchip" data-f="status" data-v="${k}" aria-pressed="${LF.status===k}">${k}<span class="n">${cnt(k)}</span></button>`).join('')}
+        <span class="sep"></span>
+        <button class="fchip" data-f="src" data-v="all" aria-pressed="${LF.src==='all'}">Both numbers</button>
+        <button class="fchip" data-f="src" data-v="8585" aria-pressed="${LF.src==='8585'}">8585<span class="n">${all.filter(r=>r.src==='8585').length}</span></button>
+        <button class="fchip" data-f="src" data-v="7788" aria-pressed="${LF.src==='7788'}">7788<span class="n">${all.filter(r=>r.src==='7788').length}</span></button>
+        <input class="srch" id="lq" type="search" placeholder="Search name or phone…" value="${esc(LF.q)}">
+      </div>
+      <div class="tw" style="margin-top:0"><table><thead><tr>
+        ${th('created','Received','l')}${th('name','Name','l')}${th('phone','Phone','l')}
+        ${th('src','Enquiry no.')}${th('status','Status')}${th('mins','Time to first response')}
+      </tr></thead><tbody>`;
+  if(!rows.length) h+=`<tr><td colspan="6"><div class="empty">No leads match that filter.</div></td></tr>`;
+  rows.forEach(r=>{
+    const rt = r.mins!=null ? `<b>${hm(r.mins)}</b>`
+      : r.bulk ? `<span style="color:var(--ink-3)">marked in a batch</span>`
+      : `<span style="color:var(--ink-3)">not yet actioned</span>`;
+    h+=`<tr>
+      <td class="l"><div class="nm">${dL(r.created.slice(0,10))}</div>
+        <div style="color:var(--ink-3);font-size:11px">${esc(tOnly(r.created))}</div></td>
+      <td class="l">${esc(r.name)}</td>
+      <td class="l ph">${esc(r.phone)}</td>
+      <td>${esc(r.src)}</td>
+      <td><span class="stg ${esc(r.status)}"><i></i>${esc(r.status)}</span></td>
+      <td>${rt}</td></tr>`;});
+  h+=`</tbody></table></div>
+      <p class="note">Showing <b>${num(rows.length)}</b> of ${num(all.length)} enquiries.
+      “Marked in a batch” means several leads were updated together, so an individual pick-up time cannot be
+      worked out for those. Tap any column heading to sort.</p>
+    </div>`;
+  document.getElementById('leadapp').innerHTML=h;
+  wireLeads();
+}
+function wireLeads(){
+  document.querySelectorAll('#p-leads .fchip').forEach(b=>b.onclick=()=>{
+    LF[b.dataset.f]=b.dataset.v; renderLeads();});
+  document.querySelectorAll('#p-leads th.sortable').forEach(t=>t.onclick=()=>{
+    const k=t.dataset.k;
+    LSORT = LSORT.k===k ? {k,dir:LSORT.dir==='asc'?'desc':'asc'} : {k,dir:k==='created'?'desc':'asc'};
+    renderLeads();});
+  const q=document.getElementById('lq');
+  if(q) q.oninput=()=>{LF.q=q.value; renderLeads();
+    const n=document.getElementById('lq'); n.focus(); n.setSelectionRange(n.value.length,n.value.length);};
+}
+document.querySelectorAll('#rtabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#rtabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('.rpanel').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
+  scrollTo({top:0,behavior:'smooth'});});
+
+document.getElementById('theme').onclick=()=>{
+  const dk=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=dk?'light':'dark';
+  document.getElementById('theme').textContent=dk?'☾':'☀';};
+
+/* ---------- load data.json ---------- */
+function init(data){
+  R=data;
+  document.getElementById('rtabs').classList.remove('hide');
+  document.getElementById('leadcnt').textContent=R.leadRows.length;
+  render();
+  renderLeads();
+}
+function loadFail(why){
+  document.getElementById('app').innerHTML=
+    `<div class="loadmsg"><h2>Report data could not be loaded</h2>
+      <p>${esc(why)}</p>
+      <p class="hint">If you are opening this file directly from your computer, browsers block it from reading
+        <code>data.json</code> for security reasons. Open the report from its web address instead, or contact
+        whoever sent you this link.</p></div>`;
+}
+document.getElementById('app').innerHTML=
+  `<div class="loadmsg"><div class="spin"></div><p>Loading the latest figures&hellip;</p></div>`;
+fetch('data.json?v='+Date.now(),{cache:'no-store'})
+  .then(r=>{ if(!r.ok) throw new Error('The server returned '+r.status+' for data.json'); return r.json(); })
+  .then(d=>init(d))
+  .catch(e=>loadFail(String(e && e.message ? e.message : e)));
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Keep this whole folder out of search engines (Halcyon's report holds lead names/phone numbers)
+Header set X-Robots-Tag "noindex, nofollow, noarchive"
+
+# Always serve the freshest report data
+<FilesMatch "data\.json$">
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+  Header set Pragma "no-cache"
+</FilesMatch>
+# Let the page itself cache for an hour
+<FilesMatch "\.html$">
+  Header set Cache-Control "public, max-age=3600"
+</FilesMatch>
