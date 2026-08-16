@@ -69,6 +69,16 @@ body{background:var(--canvas);color:var(--ink);font-size:15px;line-height:1.5;
 .chip.good{color:var(--good-ink)} .chip.good .cd{background:var(--good)}
 .chip.mut{color:var(--ink-3)} .chip.mut .cd{background:var(--ink-3)}
 .chip.warn{color:var(--warn-ink)} .chip.warn .cd{background:var(--warn)}
+.ybar{background:linear-gradient(135deg,color-mix(in srgb,var(--s3) 12%,var(--card)),var(--card));
+  border:1px solid var(--line-2);border-radius:20px;padding:20px 22px;box-shadow:var(--glow);margin-bottom:26px}
+.ybhd{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.ybhd h3{margin:0;font-size:19px;font-weight:700;letter-spacing:-.025em}
+.ybsub{color:var(--ink-2);font-size:13px;margin:0 0 15px}
+.ygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.yv{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+.yv .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:6px}
+.yv .v{font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.yv .s{font-size:11.5px;color:var(--ink-2);margin-top:5px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:10px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 17px 13px;
   box-shadow:var(--glow);display:flex;flex-direction:column;overflow:hidden}
@@ -297,6 +307,8 @@ const statCard=o=>`<div class="stat"><div class="sl">${esc(o.label)}</div>
   ${o.spark?`<div class="spark">${o.spark}</div>`:''}</div>`;
 const mcell=(l,v,s)=>`<div class="mcell"><div class="ml">${esc(l)}</div><div class="mv">${v}</div>
   ${s?`<div class="ms">${s}</div>`:''}</div>`;
+const yv=(l,v,s)=>`<div class="yv"><div class="l">${esc(l)}</div><div class="v">${v}</div>
+  ${s?`<div class="s">${s}</div>`:''}</div>`;
 const approx=ok=>ok?'':'<span class="approx" title="Meta counts each person once, so reach cannot be added up day by day. For custom ranges this is the daily total and slightly overstates unique people.">APPROX</span>';
 function table(cols,rows,tot){
   let h='<div class="tw"><table><thead><tr>';
@@ -335,6 +347,24 @@ function render(){
     ${running?`<span class="chip good"><span class="cd"></span>ads running</span>`
              :`<span class="chip mut"><span class="cd"></span>ads paused</span>`}</div>
     <p class="lede">${lede}</p></div>`;
+
+  /* ---------- YESTERDAY (fixed, independent of the date range above) ---------- */
+  const y=C.daily[C.daily.length-1];
+  if(y){
+    const ycpr=y.res?y.spend/y.res:0, ycpl=y.leads?y.spend/y.leads:0, ycpreg=y.regs?y.spend/y.regs:0;
+    h+=`<div class="ybar"><div class="ybhd"><h3>Yesterday &middot; ${dLY(y.d)}</h3>
+      <span class="chip good"><span class="cd"></span>finalised</span></div>
+      <p class="ybsub">The most recent full day Meta has finished counting — a steady number to check against,
+        unlike the range above which you can change.</p>
+      <div class="ygrid">
+        ${yv('Amount spent',money(y.spend),num(y.imp)+' times shown')}
+        ${y.res?yv(C.resLabel,num(y.res),money2(ycpr)+' per '+C.resUnit):''}
+        ${y.leads?yv('Website leads',num(y.leads),money2(ycpl)+' each'):''}
+        ${C.hasRegs&&y.regs?yv('Sign-ups',num(y.regs),money2(ycpreg)+' each'):''}
+        ${yv('Clicks',num(y.clicks),pct(y.ctr)+' click-through')}
+        ${!y.res&&!y.spend?yv('No delivery',esc(C.footNote?'Account paused':'—'),''):''}
+      </div></div>`;
+  }
 
   const st=[];
   st.push(statCard({label:'Amount spent',value:money(k.spend),

@@ -207,7 +207,28 @@ function table(cols,rows,tot){
 
 function render(){
   const T=R.todayCalls, W=R.todayWeb, wc=R.weekCalls, ww=R.weekWeb, tt=R.weekTotal, sh=R.sheet;
+  const Y=R.yesterdayCalls, YW=R.yesterdayWeb;
   let h='';
+
+  /* ---------- YESTERDAY (finalised, sits above Today) ---------- */
+  if(Y&&YW&&R.yesterday){
+    h+=`<div class="livebar" style="margin-top:0">
+      <div class="livehd"><span class="dot" style="background:var(--good);animation:none"></span>
+        <h2>Yesterday &middot; ${dLY(R.yesterday)}</h2>
+        <span class="chip good"><span class="cd"></span>finalised</span></div>
+      <p class="livesub">The full day, closed out — Meta has finished counting these, so they won't move again.
+        A steady number to check today's "still rising" figures against.</p>
+      <div class="livegrid">
+        ${lv('Phone calls',num(Y.res),money2(Y.cpr)+' per call','hi')}
+        ${lv('Website leads',num(YW.leads),`${num(sh.yest8585)} on 8585 · ${num(sh.yest7788)} on 7788`,'hi2')}
+        ${lv('Spent',money(Y.spend+YW.spend),money(Y.spend)+' calls · '+money(YW.spend)+' website')}
+        ${lv('Cost per lead',money2(R.cpl.yesterday),'Website spend ÷ leads that day','hi2')}
+        ${lv('Landing page views',num(YW.lpv),'People who opened the page')}
+        ${lv('Times shown',compact(Y.imp+YW.imp),num(Y.clicks+YW.clicks)+' clicks')}
+        ${Y.c20!=null?lv('Calls 20 sec+',num(Y.c20),'Connected at least 20 seconds'):''}
+        ${Y.c60!=null?lv('Calls 60 sec+',num(Y.c60),'Connected at least 60 seconds'):''}
+      </div></div>`;
+  }
 
   /* ---------- TODAY ---------- */
   h+=`<div class="livebar">
@@ -222,6 +243,8 @@ function render(){
       ${lv('Cost per lead',money2(R.cpl.today),'Website spend ÷ leads today','hi2')}
       ${lv('Landing page views',num(W.lpv),'People who opened the page')}
       ${lv('Times shown',compact(T.imp+W.imp),num(T.clicks+W.clicks)+' clicks')}
+      ${T.c20!=null?lv('Calls 20 sec+',num(T.c20),'Connected at least 20 seconds'):''}
+      ${T.c60!=null?lv('Calls 60 sec+',num(T.c60),'Connected at least 60 seconds'):''}
     </div></div>`;
 
   /* ---------- 7 DAYS ---------- */
@@ -289,7 +312,7 @@ function render(){
       ],R.webCamps,ww)}
       <p class="note"><b>How cost per lead is worked out.</b> Your lead sheet logged ${num(R.cpl.sheetLeads)} leads
       between ${dL(R.cpl.sheetFrom)} and ${dLY(R.cpl.sheetTo)}, against ${money2(R.cpl.sheetSpend)} of website ad spend
-      over the same two days — <b>${money2(R.cpl.sheetCpl)} per lead</b>. Meta's own figure for the full 7 days is
+      over that same window — <b>${money2(R.cpl.sheetCpl)} per lead</b>. Meta's own figure for the full 7 days is
       ${money2(R.cpl.metaWeek)}, but that only counts the ${num(R.cpl.metaLeads)} leads its pixel could tie back to an
       ad; three of the four campaigns show zero leads there despite sending real traffic. Your sheet is the count to
       trust, so that is the number shown above.</p>
