@@ -413,6 +413,23 @@ function render(){
       ${bars({items:camps.map(x=>({name:x.name,value:x.cpm,extra:'CTR '+pct(x.ctr)})),fmt:money2,c:'var(--s3)'})}</div>
   </div>`;
 
+  if(C.ageDemo&&C.ageDemo.rows&&C.ageDemo.rows.length){
+    const A=C.ageDemo, aRows=A.rows, aSpend=aRows.reduce((s,r)=>s+r.spend,0),
+      aInstalls=aRows.reduce((s,r)=>s+r.installs,0), aRegs=aRows.reduce((s,r)=>s+r.regs,0);
+    h+=`<div class="sechd"><h3>Who's installing — by age</h3>
+      <span>${dL(A.from)} – ${dLY(A.to)} · fixed window, not the range above</span></div>
+    <p class="sub" style="margin:-6px 0 12px">Meta's age breakdown for people who saw or acted on your ads,
+      shown for the account's full run so far${A.unknownInstalls?` (plus ${num(A.unknownInstalls)} ${C.resLabelLower} Meta couldn't match to an age group)`:''}.</p>
+    <div class="grid2">
+      <div class="card"><h4>Spend by age group</h4><p class="sub">${money(aSpend)} across ${aRows.length} age groups</p>
+        ${bars({items:aRows.map(r=>({name:r.age,value:r.spend,extra:aSpend?pct(r.spend/aSpend*100):''})),fmt:money,c:'var(--s1)'})}</div>
+      <div class="card"><h4>${esc(C.resLabel)} by age group</h4><p class="sub">${num(aInstalls)} total</p>
+        ${bars({items:aRows.map(r=>({name:r.age,value:r.installs,extra:money2(r.cpi)+' each'})),fmt:num,c:'var(--s2)'})}</div>
+      ${C.hasRegs?`<div class="card"><h4>Sign-ups by age group</h4><p class="sub">${num(aRegs)} total</p>
+        ${bars({items:aRows.map(r=>({name:r.age,value:r.regs,extra:r.regs?money2(r.cpReg)+' each':''})),fmt:num,c:'var(--s3)'})}</div>`:''}
+    </div>`;
+  }
+
   const mg=[
     mcell('Times shown',compact(k.imp),'How often your ads appeared on a screen'),
     mcell('People reached',compact(k.reach)+approx(k.reachExact),
