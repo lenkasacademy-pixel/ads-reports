@@ -139,9 +139,11 @@ nav.rt.hide{display:none}
 <div class="shell">
   <nav class="rt hide" id="rtabs">
     <button data-p="overview" aria-selected="true">Report</button>
+    <button data-p="analytics" aria-selected="false">Analytics</button>
     <button data-p="leads" aria-selected="false">All leads <span class="cnt" id="leadcnt"></span></button>
   </nav>
   <div class="rpanel on" id="p-overview"><div id="app"></div></div>
+  <div class="rpanel" id="p-analytics"><div id="analyticsapp"></div></div>
   <div class="rpanel" id="p-leads"><div id="leadapp"></div></div>
   <div class="foot" id="foot"></div>
 </div>
@@ -188,6 +190,19 @@ function barsCol(rows,key,color,fmt,label){
       ${r.partial?`<text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--warn-ink)">so far</text>`:''}</g>`;});
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" style="aspect-ratio:${W}/${H}">${g}${b}
     <line x1="${ml}" x2="${W-mr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="var(--axis)"/></svg>`;
+}
+function barsH(items,c,fmt,keepZero){
+  const it=keepZero?items.slice():items.filter(d=>d.value>0);
+  if(!it.length)return `<p style="color:var(--ink-3);font-size:13px;margin:14px 0">Nothing to show yet.</p>`;
+  const mx=Math.max(...it.map(d=>d.value),1),rowH=40,W=860,H=it.length*rowH;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}">`;
+  it.forEach((d,i)=>{const y=i*rowH,bw=Math.max(3,(d.value/mx)*(W*.62));
+    s+=`<g><text x="0" y="${y+13}" font-size="12.5" fill="var(--ink-2)">${esc(d.label)}</text>
+      ${d.extra?`<text x="${W}" y="${y+13}" text-anchor="end" font-size="11.5" fill="var(--ink-3)">${esc(d.extra)}</text>`:''}
+      <rect x="0" y="${y+20}" width="${W}" height="11" rx="5.5" fill="var(--grid)" opacity=".5"/>
+      <rect x="0" y="${y+20}" width="${bw.toFixed(1)}" height="11" rx="5.5" fill="${d.color||c}"/>
+      <text x="${(bw+11).toFixed(1)}" y="${y+29}" font-size="12.5" font-weight="650" fill="var(--ink)">${fmt(d.value)}</text></g>`;});
+  return s+'</svg>';
 }
 const lv=(l,v,s,cls)=>`<div class="lv ${cls||''}"><div class="l">${esc(l)}</div><div class="v">${v}</div>
   ${s?`<div class="s">${s}</div>`:''}</div>`;
@@ -361,6 +376,99 @@ function render(){
     enquiries received. Cost per call divides only the spend of the call campaigns, never total account spend.`;
 }
 
+/* ---------- analytics tab ---------- */
+function renderAnalytics(){
+  const sh=R.sheet, resp=R.resp, all=R.leadRows, st=sh.status;
+  const STATCOLOR={New:'var(--warn)',Contacted:'var(--s1)',Qualified:'var(--good)',Junk:'var(--ink-3)'};
+  const pctOf=(n,d)=>d?pct(n/d*100):'0.00%';
+
+  /* response-time buckets — individually-timed leads only, same population as the headline avg/median */
+  const timed=all.filter(r=>r.mins!=null);
+  const BUCKETS=[
+    {label:'Under 15 min',test:m=>m<15},
+    {label:'15–60 min',test:m=>m>=15&&m<60},
+    {label:'1–6 hrs',test:m=>m>=60&&m<360},
+    {label:'6–24 hrs',test:m=>m>=360&&m<1440},
+    {label:'Over 24 hrs',test:m=>m>=1440},
+  ];
+  const bucketRows=BUCKETS.map(b=>({label:b.label,value:timed.filter(r=>b.test(r.mins)).length}));
+
+  /* leads received per day, zero-filled across the sheet's full date span */
+  const byDay={};
+  all.forEach(r=>{const d=(r.created||'').slice(0,10); if(d) byDay[d]=(byDay[d]||0)+1;});
+  const dayRows=[];
+  if(sh.minDate&&sh.maxDate){
+    let d=new Date(sh.minDate+'T00:00:00Z'); const end=new Date(sh.maxDate+'T00:00:00Z');
+    while(d<=end){const iso=d.toISOString().slice(0,10);
+      dayRows.push({d:iso,calls:byDay[iso]||0}); d.setUTCDate(d.getUTCDate()+1);}
+  }
+
+  /* response speed split by enquiry number */
+  const bySrcResp={};
+  ['8585','7788'].forEach(s=>{
+    const mins=timed.filter(r=>r.source===s).map(r=>r.mins).sort((a,b)=>a-b);
+    const n=mins.length, mid=Math.floor(n/2);
+    bySrcResp[s]={n, mean:n?mins.reduce((a,b)=>a+b,0)/n:null,
+      median:n?(n%2?mins[mid]:(mins[mid-1]+mins[mid])/2):null};
+  });
+  const srcRow=s=>sh.bySource.find(x=>x.src===s)||{src:s,total:0,responded:0,status:{}};
+
+  let h=`<h2 class="sec" style="margin-top:26px">Lead & caller analytics</h2>
+    <p class="secsub">From your lead sheet · ${dL(sh.minDate)} – ${dLY(sh.maxDate)} · ${num(all.length)} leads logged</p>
+    <div class="stats">
+      ${stat('Total leads',num(sh.total),'')}
+      ${stat('Response rate',pct(sh.rate),num(sh.responded)+' actioned so far')}
+      ${stat('Average response',hm(resp.meanMins),`Across ${num(resp.n)} individually-timed leads`,resp.meanMins>999)}
+      ${stat('Typical response',hm(resp.medianMins),'Middle value — half of leads were faster',resp.medianMins>999)}
+    </div>
+
+    <div class="card" style="margin-top:12px"><h4>Lead status</h4>
+      <p class="sub">Where every lead currently stands, out of ${num(sh.total)} logged</p>
+      ${barsH([
+        {label:'New — not yet actioned',value:st.New||0,color:STATCOLOR.New,extra:pctOf(st.New||0,sh.total)},
+        {label:'Contacted',value:st.Contacted||0,color:STATCOLOR.Contacted,extra:pctOf(st.Contacted||0,sh.total)},
+        {label:'Qualified',value:st.Qualified||0,color:STATCOLOR.Qualified,extra:pctOf(st.Qualified||0,sh.total)},
+        {label:'Junk / not genuine',value:st.Junk||0,color:STATCOLOR.Junk,extra:pctOf(st.Junk||0,sh.total)},
+      ],'var(--s1)',num)}
+    </div>
+
+    <div class="card" style="margin-top:12px"><h4>Time to first response</h4>
+      <p class="sub">${num(resp.n)} of ${num(resp.total)} leads were marked one at a time, so these are the ones with
+        a real timestamp — the rest were updated together in batches and are excluded here, same as the average above</p>
+      ${barsH(bucketRows,'var(--s2)',num,true)}
+    </div>
+
+    <div class="card" style="margin-top:12px"><h4>Leads received per day</h4>
+      <p class="sub">${dL(sh.minDate)} – ${dLY(sh.maxDate)}</p>
+      ${dayRows.length?barsCol(dayRows,'calls','var(--s3)',v=>num(v)):'<p style="color:var(--ink-3);font-size:13px">Not enough days to chart yet.</p>'}
+    </div>
+
+    <div class="card" style="margin-top:12px"><h4>By enquiry number</h4>
+      <p class="sub">8585 vs 7788 — volume, status and how fast each gets a response</p>
+      <div class="mgrid">
+        ${mcell('8585 leads',num(srcRow('8585').total),pctOf(srcRow('8585').responded,srcRow('8585').total)+' actioned')}
+        ${mcell('7788 leads',num(srcRow('7788').total),pctOf(srcRow('7788').responded,srcRow('7788').total)+' actioned')}
+        ${mcell('8585 average response',bySrcResp['8585'].n?hm(bySrcResp['8585'].mean):'—',bySrcResp['8585'].n+' timed leads')}
+        ${mcell('7788 average response',bySrcResp['7788'].n?hm(bySrcResp['7788'].mean):'—',bySrcResp['7788'].n+' timed leads')}
+        ${mcell('8585 typical response',bySrcResp['8585'].n?hm(bySrcResp['8585'].median):'—','Middle value')}
+        ${mcell('7788 typical response',bySrcResp['7788'].n?hm(bySrcResp['7788'].median):'—','Middle value')}
+      </div>
+      ${table([
+        {h:'Enquiry number',l:1,f:r=>`<div class="nm">${esc(r.src)}</div>`},
+        {h:'Leads',f:r=>num(r.total)},
+        {h:'New',f:r=>num(r.status.New||0)},
+        {h:'Contacted',f:r=>num(r.status.Contacted||0)},
+        {h:'Qualified',f:r=>num(r.status.Qualified||0)},
+        {h:'Junk',f:r=>num(r.status.Junk||0)},
+        {h:'Response rate',f:r=>pctOf(r.responded,r.total)},
+      ],sh.bySource)}
+    </div>
+    <p class="note">Looking for individual caller records — names, phone numbers, exact timestamps? See the
+      <b>All leads</b> tab for the full searchable, sortable list.</p>`;
+
+  document.getElementById('analyticsapp').innerHTML=h;
+}
+
 /* ---------- all leads tab ---------- */
 let LF={status:'all',src:'all',q:''}, LSORT={k:'created',dir:'desc'};
 const tOnly=s=>{const p=s.split(' ');return p[1]?p[1].slice(0,5):'';};
@@ -368,7 +476,7 @@ function leadFiltered(){
   const q=LF.q.trim().toLowerCase();
   let rows=R.leadRows.filter(r=>
     (LF.status==='all'||r.status===LF.status) &&
-    (LF.src==='all'||r.src===LF.src) &&
+    (LF.src==='all'||r.source===LF.src) &&
     (!q || r.name.toLowerCase().includes(q) || r.phone.includes(q)));
   const k=LSORT.k, dir=LSORT.dir==='asc'?1:-1;
   rows=rows.slice().sort((a,b)=>{
@@ -393,8 +501,8 @@ function renderLeads(){
           `<button class="fchip" data-f="status" data-v="${k}" aria-pressed="${LF.status===k}">${k}<span class="n">${cnt(k)}</span></button>`).join('')}
         <span class="sep"></span>
         <button class="fchip" data-f="src" data-v="all" aria-pressed="${LF.src==='all'}">Both numbers</button>
-        <button class="fchip" data-f="src" data-v="8585" aria-pressed="${LF.src==='8585'}">8585<span class="n">${all.filter(r=>r.src==='8585').length}</span></button>
-        <button class="fchip" data-f="src" data-v="7788" aria-pressed="${LF.src==='7788'}">7788<span class="n">${all.filter(r=>r.src==='7788').length}</span></button>
+        <button class="fchip" data-f="src" data-v="8585" aria-pressed="${LF.src==='8585'}">8585<span class="n">${all.filter(r=>r.source==='8585').length}</span></button>
+        <button class="fchip" data-f="src" data-v="7788" aria-pressed="${LF.src==='7788'}">7788<span class="n">${all.filter(r=>r.source==='7788').length}</span></button>
         <input class="srch" id="lq" type="search" placeholder="Search name or phone…" value="${esc(LF.q)}">
       </div>
       <div class="tw" style="margin-top:0"><table><thead><tr>
@@ -411,7 +519,7 @@ function renderLeads(){
         <div style="color:var(--ink-3);font-size:11px">${esc(tOnly(r.created))}</div></td>
       <td class="l">${esc(r.name)}</td>
       <td class="l ph">${esc(r.phone)}</td>
-      <td>${esc(r.src)}</td>
+      <td>${esc(r.source)}</td>
       <td><span class="stg ${esc(r.status)}"><i></i>${esc(r.status)}</span></td>
       <td>${rt}</td></tr>`;});
   h+=`</tbody></table></div>
@@ -449,6 +557,7 @@ function init(data){
   document.getElementById('rtabs').classList.remove('hide');
   document.getElementById('leadcnt').textContent=R.leadRows.length;
   render();
+  renderAnalytics();
   renderLeads();
 }
 function loadFail(why){
